@@ -1,8 +1,8 @@
 /**
- * My Primitive HashTable class.
+ * My Developing HashTable class.
  * 
  * @author Jessica Li
- * @version 0, 09/30/15
+ * @version 0.1 -- 09/30/15
  */
 public class HashTable<K,V>
 {
@@ -30,18 +30,17 @@ public class HashTable<K,V>
 	}
 
 	/**
-	 * Puts the object in the hashtable. Deals with collisions by placing the object using quadratic probing, 
-	 * but not with prime numbers?
-	 * Always takes the absolute value of the hashcode. 
-	 * Rehashes table is load factor is exceeded. Load factor is compared with population of array / capacity of array. 
+	 * Puts Entry into hashtable. 
+	 * Increments the population, and if percentage of array filled exceeds loadFactor, rehashes the table. 
+	 * Always takes the absolute value of the hashcode, since sometimes the hashcode is negative. 
+	 * Deals with collisions by placing the object in the next open spot. 
 	 * 
-	 * @param obj	the object to be hashed
+	 * 
+	 * @param key	the key of the entry, give the hash value
+	 * @param value the value associated with the key, to be stored in the spot that key codes for
 	 */
 	public void put( K key, V value )
 	{
-		
-
-
 
 		population++;
 
@@ -51,8 +50,7 @@ public class HashTable<K,V>
 		}
 
 
-
-		int code = Math.abs( key.hashCode() );				// how to deal with negatives?
+		int code = Math.abs( key.hashCode() );			// how to deal with negatives?
 		code = code % ( htable.length );
 		//System.out.println( code );
 		//int quad = 1; 
@@ -65,16 +63,15 @@ public class HashTable<K,V>
 		}
 
 		Entry ee = new Entry( key, value );
-		htable[code] = ee;
-		//htable[code] = obj;
-		
+		htable[code] = ee;		
 
 
 		
 	}
 
 	/**
-	 * Returns String representation of the HashTable.
+	 * Returns String representation of the HashTable. Adds "key: value" if spot in array is not null, 
+	 * otherwise adds null. Adds these strings to an overall string toReturn and returns toReturn.
 	 * 
 	 * @return	a string representing the contents of the htable array
 	 */
@@ -93,9 +90,10 @@ public class HashTable<K,V>
 	}
 
 	/**
-	 * Doubles the size of the HashTable and rehashes each item contained within. 
-	 * Created new array of double size, assigned to htable. 
+	 * Doubles the length of the HashTable and rehashes each item contained within. 
+	 * Creates new array htable2 of double length, assigns to htable. 
 	 * Temporary array tempTable stores values of old htable array for rehashing into new htable array.
+	 * Uses the put() method to rehash the Entries. 
 	 */
 	private void rehash()
 	{
@@ -106,12 +104,21 @@ public class HashTable<K,V>
 		{
 			if ( tempTable[i] != null )
 			{
-				put( (K) tempTable[i].key, (V) tempTable[i].value );			//typecasting
+				put( (K) tempTable[i].key, (V) tempTable[i].value );			//typecasting because the key and value are of type Object?
 			}
 		}
 
 	}
 
+	/**
+	 * Removes the Entry with the corresponding key and returns its value. 
+	 * Returns null if the key does not exist in the table.
+	 * Uses loop to search through array, and if key matches, stores the value,
+	 * sets the spot in array to null, and returns the stored value. 
+	 *
+	 * @param key	the key of the Entry to be located and removed
+	 * @return 		the value of the Entry with the corresponding key; if no Entries match, returns null
+	 */
 	public V remove( K key )
 	{
 
@@ -119,17 +126,18 @@ public class HashTable<K,V>
 		{
 			if ( htable[i] != null && htable[i].key.equals( key ) )
 			{
-				V v = (V) htable[i].value;
+				V v = (V) htable[i].value;			//typecasting 
 				htable[i] = null;
-				return v;			//typecasting
+				return v;		
 			}
 		}
 		return null;
 	}
 
 	/**
-	 * Main method for testing program. Creats a HashTable object and uses loop to put in the same string 10 times 
-	 * and print the table 10 times.
+	 * Main method for testing program. Creats a HashTable object, creates key and value for Entry. 
+	 * Uses loop to put key and value in array 3 times. Prints the HashTable each time. Tests rehash()
+	 * Tests remove() and prints out HashTable again. 
 	 * 
 	 * @param args	main method parameter
 	 */
@@ -155,14 +163,22 @@ public class HashTable<K,V>
 	}
 
 
-	//class for entry inside class for Hashtable??
-	//can still access because it is in the Hashtable class
+	/**
+	 * Nested class used to hold key-value pairings. Has one contructor to initialize key and value. 
+	 * Because key and value are public, accessors are not needed to make these fields accessible to the HashTable class. 
+	 */
 	private class Entry<K,V>
 	{
 		
 		public K key;
 		public V value;
 
+		/**
+		 * Contructor for Entry objects. Initializes key and value fields. 
+		 * 
+		 * @param k 	passed to key
+		 * @param v 	passed to value
+		 */
 		public Entry( K k, V v )
 		{
 			key = k;

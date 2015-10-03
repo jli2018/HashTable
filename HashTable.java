@@ -1,8 +1,8 @@
 /**
- * My Developing HashTable class.
+ * My (almost) Final HashTable class. Without Quadratic Probing - to be added.
  * 
  * @author Jessica Li
- * @version 0.1 -- 09/30/15
+ * @version 1 -- 10/02/15
  */
 public class HashTable<K,V>
 {
@@ -64,9 +64,6 @@ public class HashTable<K,V>
 
 		Entry ee = new Entry( key, value );
 		htable[code] = ee;		
-
-
-		
 	}
 
 	/**
@@ -107,7 +104,6 @@ public class HashTable<K,V>
 				put( (K) tempTable[i].key, (V) tempTable[i].value );			//typecasting because the key and value are of type Object?
 			}
 		}
-
 	}
 
 	/**
@@ -135,9 +131,69 @@ public class HashTable<K,V>
 	}
 
 	/**
-	 * Main method for testing program. Creats a HashTable object, creates key and value for Entry. 
-	 * Uses loop to put key and value in array 3 times. Prints the HashTable each time. Tests rehash()
+	 * Returns the value that corresponds to key. Returns null if the key does not exist in the table.
+	 * Exactly the same code as in the remove() method, only without setting the location to null.
+	 * I wanted to not repeat the same code, but couldn't think of how to do so. 
+	 * 
+	 * @param key 	the key for the value to be returned
+	 * @return 		the value of the Entry with the corresponding key; if no Entries match, returns null
+	 */
+	public V get( K key )
+	{
+		for ( int i = 0; i < htable.length; i++ )
+		{
+			if ( htable[i] != null && htable[i].key.equals( key ) )
+			{
+				V v = (V) htable[i].value;			//typecasting 
+				return v;		
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Returns whether or not key exists in the table. Uses get() method. 
+	 * If get() returns a value, this method returns true. If get() returns null, this method returns false.
+	 * Should I use get()? Doesn't it give the computer more work even if I repeat less code? 
+	 *
+	 * @param key 	the key to be found
+	 * @return 		true if key exists in table, false if key does not exist in table
+	 */
+	public boolean containsKey( K key )
+	{
+		if ( get(key) != null )
+		{
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Returns whether or not value exists in the table.
+	 * Searches table using for loop. If Entry is not null and its value matches, returns true. 
+	 * Otherwise, returns false. 
+	 * 
+	 * @param value the value to be found
+	 * @return 		true if value exists in table, false if value does not exist in table
+	 */
+	public boolean containsValue( V value )
+	{
+		for ( int i = 0; i < htable.length; i++ )
+		{
+			if ( htable[i] != null && htable[i].value.equals( value ) )
+			{
+				return true;		
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Main method for testing program. Creats a HashTable object with array of length 3, creates key and value for Entry. 
+	 * Uses loop to put key and value in array 3 times. Prints the HashTable each time. Tests rehash().
+	 * Adds three more entries/keys and values. Prints table.
 	 * Tests remove() and prints out HashTable again. 
+	 * Tests get(), containsKey(), containsValue(), each with one successful and one null case. 
 	 * 
 	 * @param args	main method parameter
 	 */
@@ -147,7 +203,7 @@ public class HashTable<K,V>
 
 		String k = "apple";							//when does this give a negative hashCode value?
 		String v = "red fruit";
-		//System.out.println( s.hashCode() );			//prints out hashcode value for String s
+		//System.out.println( k.hashCode() );			//prints out hashcode value for String k
 
 		for ( int i = 0; i < 3; i++ )
 		{
@@ -156,9 +212,22 @@ public class HashTable<K,V>
 			System.out.println();
 		}
 
-		System.out.println( ht.remove( "apple" ) );
+		ht.put( "pomme", "un fruit rouge" );
+		ht.put( "a", "b" );
+		ht.put( "x", "y" );
 		System.out.println( ht.toString() );
 		System.out.println();
+
+
+		System.out.println( "remove() method: " + ht.remove( "apple" ) );
+		System.out.println( ht.toString() );
+		System.out.println();
+		System.out.println( "get() method: " + ht.get( k ) );
+		System.out.println( "containsKey() method: " + ht.containsKey( k ) );
+		System.out.println( "containsValue() method: " + ht.containsValue( v ) );
+		System.out.println( "get() method: " + ht.get( "pear" ) );
+		System.out.println( "containsKey() method: " + ht.containsKey( "pear" ) );
+		System.out.println( "containsValue() method: " + ht.containsValue( "not an apple" ) );
 
 	}
 
@@ -169,7 +238,6 @@ public class HashTable<K,V>
 	 */
 	private class Entry<K,V>
 	{
-		
 		public K key;
 		public V value;
 
@@ -184,9 +252,6 @@ public class HashTable<K,V>
 			key = k;
 			value = v;
 		}
-
 	}
-
-
 
 }

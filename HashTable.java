@@ -4,9 +4,9 @@
  * @author Jessica Li
  * @version 0, 09/30/15
  */
-public class HashTable
+public class HashTable<K,V>
 {
-	private Object[] htable; 
+	private Entry[] htable; 
 	private double population = 0.0;
 	private final double loadFactor = 0.6;
 
@@ -16,7 +16,7 @@ public class HashTable
 	 */
 	public HashTable()
 	{
-		htable = new Object[100];
+		htable = new Entry[100];
 	}
 
 	/**
@@ -26,7 +26,7 @@ public class HashTable
 	 */
 	public HashTable( int capacity )
 	{
-		htable = new Object[capacity];
+		htable = new Entry[capacity];
 	}
 
 	/**
@@ -37,25 +37,40 @@ public class HashTable
 	 * 
 	 * @param obj	the object to be hashed
 	 */
-	public void put( Object obj )
+	public void put( K key, V value )
 	{
-		int code = Math.abs( obj.hashCode() );				// how to deal with negatives?
-		code = code % ( htable.length );
-		int quad = 1; 
-		while ( htable[code] != null )
-		{
-			code = code + quad;
-			quad *= 2; 
-		}
+		
 
-		htable[code] = obj;
-		population++; 
 
+
+		population++;
 
 		if ( (population/htable.length) > loadFactor )
 		{
 			rehash();
 		}
+
+
+
+		int code = Math.abs( key.hashCode() );				// how to deal with negatives?
+		code = code % ( htable.length );
+		//System.out.println( code );
+		//int quad = 1; 
+		while ( htable[code] != null )
+		{
+			code++;
+			code = code % htable.length;			//in case incrementing code makes it go over the length of the table
+			//code = code + quad;
+			//quad *= 2; 
+		}
+
+		Entry ee = new Entry( key, value );
+		htable[code] = ee;
+		//htable[code] = obj;
+		
+
+
+		
 	}
 
 	/**
@@ -68,7 +83,10 @@ public class HashTable
 		String toReturn = "";
 		for ( int i = 0; i < htable.length; i++ )
 		{
-			toReturn += htable[i] + "\t" ;
+			if ( htable[i] != null )
+				toReturn += htable[i].key + ": " + htable[i].value + "\t";					//can i do this? assume they are strings?
+			else
+				toReturn += "null" + "\t";
 		}
 
 		return toReturn;
@@ -81,17 +99,32 @@ public class HashTable
 	 */
 	private void rehash()
 	{
-		Object[] htable2 = new Object[ htable.length * 2 ];
-		Object[] tempTable = htable;
+		Entry[] htable2 = new Entry[ htable.length * 2 ];
+		Entry[] tempTable = htable;
 		htable = htable2;
 		for ( int i = 0; i < tempTable.length; i++ )
 		{
 			if ( tempTable[i] != null )
 			{
-				put( tempTable[i] );
+				put( (K) tempTable[i].key, (V) tempTable[i].value );			//typecasting
 			}
 		}
 
+	}
+
+	public V remove( K key )
+	{
+
+		for ( int i = 0; i < htable.length; i++ )
+		{
+			if ( htable[i] != null && htable[i].key.equals( key ) )
+			{
+				V v = (V) htable[i].value;
+				htable[i] = null;
+				return v;			//typecasting
+			}
+		}
+		return null;
 	}
 
 	/**
@@ -102,19 +135,42 @@ public class HashTable
 	 */
 	public static void main( String[] args )
 	{
-		HashTable ht = new HashTable();
+		HashTable<String, String> ht = new HashTable<String, String>( 3 );
 
-		String s = "Jessica";					//why does this give a negative hashCode value?
+		String k = "apple";							//when does this give a negative hashCode value?
+		String v = "red fruit";
 		//System.out.println( s.hashCode() );			//prints out hashcode value for String s
 
-		for ( int i = 0; i < 10; i++ )
+		for ( int i = 0; i < 3; i++ )
 		{
-			ht.put( s );
+			ht.put( k, v );
 			System.out.println( ht.toString() );
 			System.out.println();
 		}
 
-		
+		System.out.println( ht.remove( "apple" ) );
+		System.out.println( ht.toString() );
+		System.out.println();
+
 	}
+
+
+	//class for entry inside class for Hashtable??
+	//can still access because it is in the Hashtable class
+	private class Entry<K,V>
+	{
+		
+		public K key;
+		public V value;
+
+		public Entry( K k, V v )
+		{
+			key = k;
+			value = v;
+		}
+
+	}
+
+
 
 }

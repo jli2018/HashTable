@@ -1,8 +1,8 @@
 /**
- * My (almost) Final HashTable class. Without Quadratic Probing - to be added.
+ * My Final HashTable class. Without Quadratic Probing.
  * 
  * @author Jessica Li
- * @version 1 -- 10/02/15
+ * @version 1.0 -- 10/05/15
  */
 public class HashTable<K,V>
 {
@@ -109,8 +109,12 @@ public class HashTable<K,V>
 	/**
 	 * Removes the Entry with the corresponding key and returns its value. 
 	 * Returns null if the key does not exist in the table.
-	 * Uses loop to search through array, and if key matches, stores the value,
-	 * sets the spot in array to null, and returns the stored value. 
+	 * Uses loop to search through array, and if key matches, stores the Entry
+	 * and sets the spot in array to null. 
+	 * While loop checks that if the subsequent spots are not null and have the
+	 * same hashcode value, they are shifted to the left to replaced the 
+	 * removed/shifted Entry(ies). 
+	 * Returns the value of the stored Entry. 
 	 *
 	 * @param key	the key of the Entry to be located and removed
 	 * @return 		the value of the Entry with the corresponding key; if no Entries match, returns null
@@ -122,9 +126,19 @@ public class HashTable<K,V>
 		{
 			if ( htable[i] != null && htable[i].key.equals( key ) )
 			{
-				V v = (V) htable[i].value;			//typecasting 
+				//V v = (V) htable[i].value;			//typecasting 
+				Entry ee = htable[i];					//created for later references
 				htable[i] = null;
-				return v;		
+
+				//int j = i + 1;						//should i create a new variable?
+				while ( htable[i+1] != null && Math.abs( htable[ i+1 ].key.hashCode() ) == Math.abs( ee.key.hashCode() ) )
+				{
+					htable[i] = htable[i+1]; 
+					htable[i+1] = null;
+					i++;
+				}
+
+				return (V) ee.value;
 			}
 		}
 		return null;
@@ -228,7 +242,7 @@ public class HashTable<K,V>
 		System.out.println( "get() method: " + ht.get( "pear" ) );
 		System.out.println( "containsKey() method: " + ht.containsKey( "pear" ) );
 		System.out.println( "containsValue() method: " + ht.containsValue( "not an apple" ) );
-
+		
 	}
 
 

@@ -10,6 +10,8 @@ public class HashTable<K,V>
 	private double population = 0.0;
 	private final double loadFactor = 0.6;
 
+AAAAHHHHHHH CHANGES HAVE BEEN MADE
+
 
 	/**
 	 * Default constructor. Initializes to capacity 100.

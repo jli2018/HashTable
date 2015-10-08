@@ -41,7 +41,6 @@ public class HashTable<K,V>
 	 */
 	public void put( K key, V value )
 	{
-
 		population++;
 
 		if ( (population/htable.length) > loadFactor )
@@ -49,17 +48,13 @@ public class HashTable<K,V>
 			rehash();
 		}
 
-
-		int code = Math.abs( key.hashCode() );			// how to deal with negatives?
+		int code = Math.abs( key.hashCode() );
 		code = code % ( htable.length );
-		//System.out.println( code );
-		//int quad = 1; 
+
 		while ( htable[code] != null )
 		{
 			code++;
 			code = code % htable.length;			//in case incrementing code makes it go over the length of the table
-			//code = code + quad;
-			//quad *= 2; 
 		}
 
 		Entry ee = new Entry( key, value );
@@ -67,8 +62,9 @@ public class HashTable<K,V>
 	}
 
 	/**
-	 * Returns String representation of the HashTable. Adds "key: value" if spot in array is not null, 
-	 * otherwise adds null. Adds these strings to an overall string toReturn and returns toReturn.
+	 * Returns String representation of the HashTable. If spot in array is not null, 
+	 * adds "[key]: [value]", otherwise adds null to toReturn, which stores the String to be returned. 
+	 * Returns toReturn.
 	 * 
 	 * @return	a string representing the contents of the htable array
 	 */
@@ -78,7 +74,7 @@ public class HashTable<K,V>
 		for ( int i = 0; i < htable.length; i++ )
 		{
 			if ( htable[i] != null )
-				toReturn += htable[i].key + ": " + htable[i].value + "\t";					//can i do this? assume they are strings?
+				toReturn += htable[i].key + ": " + htable[i].value + "\t";
 			else
 				toReturn += "null" + "\t";
 		}
@@ -108,59 +104,74 @@ public class HashTable<K,V>
 
 	/**
 	 * Removes the Entry with the corresponding key and returns its value. 
-	 * Returns null if the key does not exist in the table.
-	 * Uses loop to search through array, and if key matches, stores the Entry
-	 * and sets the spot in array to null. 
-	 * While loop checks that if the subsequent spots are not null and have the
-	 * same hashcode value, they are shifted to the left to replaced the 
-	 * removed/shifted Entry(ies). 
-	 * Returns the value of the stored Entry. 
+	 * While loop starts at location of key and if the spot is not null, 
+	 * checks to see if key matches the key of that Entry. If so, the Entry
+	 * is stored, the spot is set to null and population is decremented. 
+	 * Another while loop rehashes (puts) any subsequent Entries to take 
+	 * care of Entries that coded to the same spot as the removed Entry. 
+	 * Returns the value of the removed and stored Entry. 
+	 * If an Entry with a matching key is not found, returns null. 
 	 *
 	 * @param key	the key of the Entry to be located and removed
 	 * @return 		the value of the Entry with the corresponding key; if no Entries match, returns null
 	 */
 	public V remove( K key )
 	{
-
-		for ( int i = 0; i < htable.length; i++ )
+		int i = (Math.abs(key.hashCode()) % htable.length );
+		//for ( int i = (Math.abs(key.hashCode()) % htable.length ) ; i < (Math.abs(key.hashCode()) % htable.length ); i++ )
+		while( htable[i] != null )
 		{
-			if ( htable[i] != null && htable[i].key.equals( key ) )
+			//if (htable[i] == null)
+			//	break;
+			if ( htable[i].key.equals( key ) )
 			{
 				//V v = (V) htable[i].value;			//typecasting 
 				Entry ee = htable[i];					//created for later references
 				htable[i] = null;
+				population--;
 
-				//int j = i + 1;						//should i create a new variable?
-				while ( htable[i+1] != null && Math.abs( htable[ i+1 ].key.hashCode() ) == Math.abs( ee.key.hashCode() ) )
+				while ( htable[i+1] != null )
 				{
-					htable[i] = htable[i+1]; 
-					htable[i+1] = null;
+					//if ( Math.abs( htable[ i+1 ].key.hashCode() ) == Math.abs( ee.key.hashCode() ) )
+					Entry entry = htable[i+1];
+					htable[i+1] = null; 			//removes entry before rehashing
+					put( (K) entry.key, (V) entry.value );
+					population--;					//must decrement, as put() will automatically increment
 					i++;
 				}
 
 				return (V) ee.value;
 			}
+			
+			i++;
+			i = i % htable.length;					//ensures that loop will continue at the start of the array
 		}
 		return null;
 	}
 
 	/**
 	 * Returns the value that corresponds to key. Returns null if the key does not exist in the table.
-	 * Exactly the same code as in the remove() method, only without setting the location to null.
-	 * I wanted to not repeat the same code, but couldn't think of how to do so. 
+	 * Similar code to the remove() function. While loop checks spots in array 
+	 * until a null is reached, starting from the location of the hashed key. 
+	 * If the key matches, the value of the matching Entry is returned. 
+	 * If not, the method returns null. 
 	 * 
 	 * @param key 	the key for the value to be returned
 	 * @return 		the value of the Entry with the corresponding key; if no Entries match, returns null
 	 */
 	public V get( K key )
 	{
-		for ( int i = 0; i < htable.length; i++ )
+		int i = (Math.abs(key.hashCode()) % htable.length );
+
+		while( htable[i] != null )
 		{
-			if ( htable[i] != null && htable[i].key.equals( key ) )
+			if ( htable[i].key.equals( key ) )
 			{
-				V v = (V) htable[i].value;			//typecasting 
-				return v;		
+				return (V) htable[i].value;
 			}
+			
+			i++;
+			i = i % htable.length;					//ensures that loop will continue at the start of the array after hitting the end
 		}
 		return null;
 	}
@@ -205,9 +216,11 @@ public class HashTable<K,V>
 	/**
 	 * Main method for testing program. Creats a HashTable object with array of length 3, creates key and value for Entry. 
 	 * Uses loop to put key and value in array 3 times. Prints the HashTable each time. Tests rehash().
-	 * Adds three more entries/keys and values. Prints table.
+	 * Adds many more entries/keys and values. Prints table.
 	 * Tests remove() and prints out HashTable again. 
 	 * Tests get(), containsKey(), containsValue(), each with one successful and one null case. 
+	 * May contain other tests or have some parts commented out. This method changes so much 
+	 * that I figured commenting again each time would be impractical. 
 	 * 
 	 * @param args	main method parameter
 	 */
@@ -217,25 +230,31 @@ public class HashTable<K,V>
 
 		String k = "apple";							//when does this give a negative hashCode value?
 		String v = "red fruit";
-		//System.out.println( k.hashCode() );			//prints out hashcode value for String k
+		//System.out.println( k.hashCode() );		//prints out hashcode value for String k
 
-		for ( int i = 0; i < 3; i++ )
+		/*for ( int i = 0; i < 3; i++ )
 		{
 			ht.put( k, v );
 			System.out.println( ht.toString() );
 			System.out.println();
-		}
+		}*/
+		ht.put( k, v );
+		System.out.println( ht.toString() );
+		System.out.println();
 
 		ht.put( "pomme", "un fruit rouge" );
 		ht.put( "a", "b" );
 		ht.put( "x", "y" );
+		ht.put( "c", "d" );
+		ht.put( "d", "e" );
+		ht.put( k, v );
 		System.out.println( ht.toString() );
 		System.out.println();
-
 
 		System.out.println( "remove() method: " + ht.remove( "apple" ) );
 		System.out.println( ht.toString() );
 		System.out.println();
+
 		System.out.println( "get() method: " + ht.get( k ) );
 		System.out.println( "containsKey() method: " + ht.containsKey( k ) );
 		System.out.println( "containsValue() method: " + ht.containsValue( v ) );
